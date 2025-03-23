@@ -6,6 +6,9 @@ interface ImageUploaderProps {
   hasImage: boolean;
 }
 
+// Define supported image types once
+const SUPPORTED_IMAGE_TYPES = ['.png', '.jpg', '.jpeg', '.webp'];
+
 const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, hasImage }) => {
   const dropzoneRef = useRef<HTMLDivElement>(null);
   
@@ -18,7 +21,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, hasImage }
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.png', '.jpg', '.jpeg', '.gif']
+      'image/*': SUPPORTED_IMAGE_TYPES
     },
     maxFiles: 1,
     multiple: false,
@@ -51,38 +54,38 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, hasImage }
     <div 
       {...getRootProps()} 
       ref={dropzoneRef}
-      className={`
-        flex flex-col items-center justify-center 
-        w-full h-full border-2 border-dashed rounded-lg 
-        transition-colors cursor-pointer
-        ${isDragActive 
-          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-          : 'border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/20'}
-      `}
+      className="w-full h-full flex flex-col items-center justify-center"
     >
       <input {...getInputProps()} />
-      <svg 
-        className="w-12 h-12 mb-4 text-gray-400"
-        fill="none" 
-        stroke="currentColor" 
-        viewBox="0 0 24 24" 
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path 
-          strokeLinecap="round" 
-          strokeLinejoin="round" 
-          strokeWidth="1.5" 
-          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-        />
-      </svg>
-      <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
-        <span className="font-semibold">Click to upload</span> or drag and drop
-      </p>
-      <p className="text-xs text-gray-500 dark:text-gray-500">
-        You can also paste an image from clipboard
-      </p>
+      <div className="mb-3 bg-white rounded-full p-3 w-20 h-20 flex items-center justify-center">
+        <svg 
+          className="w-10 h-10 text-gray-400"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth="2" 
+            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+        </svg>
+      </div>
+      <div className="text-center">
+        <p className="text-sm mb-2L">
+          <span className="text-blue-500 font-medium">Click to upload</span> or drag & drop
+        </p>
+        <p className="text-xs text-gray-500">
+          You can also paste an image from clipboard
+        </p>
+      </div>
+      <div className="mt-1 text-xs text-gray-500">
+        Supports {SUPPORTED_IMAGE_TYPES.map(type => type.replace('.', '').toUpperCase()).join(', ')}
+      </div>
     </div>
   );
 };
 
-export default ImageUploader; 
+export default ImageUploader;

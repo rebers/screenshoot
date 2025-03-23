@@ -36,7 +36,16 @@ export default function Home() {
       {/* Header */}
       <header className="py-4 px-6 bg-white dark:bg-gray-900 shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">BeautifyBG</h1>
+          <div className="flex items-center">
+            <svg className="w-7 h-7 mr-2 text-gray-800 dark:text-white" viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="8">
+              <circle cx="50" cy="50" r="45" fill="none"/>
+              <path d="M50 5 C 50 95 50 95 50 95" />
+              <path d="M5 50 C 95 50 95 50 95 50" />
+              <path d="M19 19 C 81 81 81 81 81 81" />
+              <path d="M81 19 C 19 81 19 81 19 81" />
+            </svg>
+            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Screenshoot</h1>
+          </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">Screenshot Beautifier</p>
         </div>
       </header>
@@ -77,7 +86,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="py-3 px-6 bg-white dark:bg-gray-900 shadow-inner-top">
         <div className="max-w-7xl mx-auto text-center text-sm text-gray-500 dark:text-gray-400">
-          BeautifyBG - All processing happens in your browser. No data is sent to any server.
+          Screenshoot - All processing happens in your browser. No data is sent to any server.
         </div>
       </footer>
     </div>

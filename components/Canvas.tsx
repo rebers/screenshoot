@@ -294,8 +294,12 @@ const Canvas: React.FC<CanvasProps> = ({
   
   // Style for the placeholder when no image is uploaded
   const placeholderStyle: React.CSSProperties = {
-    width: '200px',
-    height: '200px',
+    minWidth: '300px',
+    minHeight: '200px',
+    width: '100%',
+    height: '100%',
+    maxWidth: '80%',
+    maxHeight: '80%',
     backgroundColor: '#fff',
     borderRadius: settings.borderRadius > 0 ? `${settings.borderRadius}px` : '0',
     boxShadow: settings.shadow > 0 

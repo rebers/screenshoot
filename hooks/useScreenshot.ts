@@ -129,7 +129,7 @@ export const useScreenshot = () => {
         
         // Create a link and trigger download
         const link = document.createElement('a');
-        link.download = 'beautified-screenshot.png';
+        link.download = 'screenshoot.png';
         link.href = dataUrl;
         link.click();
       } catch (error) {
@@ -182,23 +182,130 @@ export const useScreenshot = () => {
           tempImage.src = containerDataUrl;
         });
         
-        // Convert canvas to data URL
-        const dataUrl = canvas.toDataURL('image/png');
+        try {
+          // Primary method: Use the newer clipboard API directly with the canvas
+          const blob = await new Promise<Blob>((resolve, reject) => {
+            canvas.toBlob((blob) => {
+              if (blob) resolve(blob);
+              else reject(new Error('Failed to create blob from canvas'));
+            }, 'image/png', 1.0);
+          });
+          
+          // Try to use the modern Clipboard API first
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              [blob.type]: blob
+            })
+          ]);
+          
+          // Show success via a temporary DOM element
+          showCopySuccess();
+          
+          return; // Exit if the above succeeds
+        } catch (e) {
+          console.log('Modern clipboard API failed, trying fallback...', e);
+          // Continue to fallback method if the above fails
+        }
         
-        // Create a blob from data URL
-        const blob = await fetch(dataUrl).then(res => res.blob());
-        
-        // Copy to clipboard
-        await navigator.clipboard.write([
-          new ClipboardItem({
-            [blob.type]: blob
-          })
-        ]);
+        // Fallback method: Create a temporary element and use execCommand
+        try {
+          // Create a temporary textarea for the clipboard operation
+          const img = document.createElement('img');
+          img.src = canvas.toDataURL('image/png');
+          
+          const div = document.createElement('div');
+          div.contentEditable = 'true';
+          div.style.position = 'absolute';
+          div.style.left = '-99999px';
+          
+          // Append to DOM
+          document.body.appendChild(div);
+          div.appendChild(img);
+          
+          // Select the image
+          const selection = window.getSelection();
+          const range = document.createRange();
+          range.selectNodeContents(div);
+          
+          selection?.removeAllRanges();
+          selection?.addRange(range);
+          
+          // Execute copy command
+          const successful = document.execCommand('copy');
+          if (!successful) {
+            throw new Error('execCommand copy failed');
+          }
+          
+          // Clean up
+          document.body.removeChild(div);
+          
+          // Show success message
+          showCopySuccess();
+        } catch (fallbackError) {
+          console.error('Clipboard fallback failed:', fallbackError);
+          showCopyError();
+        }
       } catch (error) {
         console.error('Error copying to clipboard:', error);
+        showCopyError();
       }
     }
   }, [screenshotSrc, settings.aspectRatio]);
+  
+  // Helper functions for clipboard feedback
+  const showCopySuccess = () => {
+    const notification = document.createElement('div');
+    notification.textContent = 'Copied to clipboard!';
+    notification.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #10B981;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      z-index: 9999;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      notification.style.transition = 'opacity 0.5s ease';
+      setTimeout(() => document.body.removeChild(notification), 500);
+    }, 2000);
+  };
+  
+  const showCopyError = () => {
+    const notification = document.createElement('div');
+    notification.textContent = 'Could not copy to clipboard. Try using the Save button instead.';
+    notification.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #EF4444;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      z-index: 9999;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      notification.style.transition = 'opacity 0.5s ease';
+      setTimeout(() => document.body.removeChild(notification), 500);
+    }, 3000);
+  };
 
   return {
     screenshotSrc,
