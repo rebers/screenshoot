@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import Canvas from '../components/Canvas';
 import ControlPanel from '../components/ControlPanel';
 import { useScreenshot } from '../hooks/useScreenshot';

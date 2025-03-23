@@ -84,49 +84,48 @@ export const useScreenshot = () => {
   const exportImage = useCallback(async (elementRef: React.RefObject<HTMLDivElement>) => {
     if (elementRef.current && screenshotSrc) {
       try {
-        // Find the export container
-        const backgroundElement = elementRef.current.querySelector('.export-container');
+        // Find the export container (canvas with background)
+        const exportContainer = elementRef.current.querySelector('.export-container');
         
-        if (!backgroundElement) {
-          throw new Error('Could not find content element for export');
+        if (!exportContainer) {
+          throw new Error('Could not find export container for export');
         }
         
-        // Get the aspect ratio dimensions
-        const { width: aspectWidth, height: aspectHeight, exactDimensions } = getAspectRatioDimensions(settings.aspectRatio);
-        const aspectRatio = aspectWidth / aspectHeight;
+        // Get the exact dimensions from the selected aspect ratio preset
+        const { width: aspectWidth, height: aspectHeight } = getAspectRatioDimensions(settings.aspectRatio);
         
-        // Calculate export dimensions
-        let exportWidth, exportHeight;
-        
-        if (exactDimensions) {
-          // For social media posts, use the exact dimensions
-          exportWidth = aspectWidth;
-          exportHeight = aspectHeight;
-        } else {
-          // For standard ratios, use a high-quality base size
-          const baseExportSize = 1920;
-          
-          if (aspectRatio >= 1) {
-            // Landscape or square
-            exportWidth = baseExportSize;
-            exportHeight = Math.round(baseExportSize / aspectRatio);
-          } else {
-            // Portrait
-            exportHeight = baseExportSize;
-            exportWidth = Math.round(baseExportSize * aspectRatio);
-          }
-        }
-        
-        const dataUrl = await toPng(backgroundElement as HTMLElement, { 
-          quality: 1,
-          width: exportWidth,
-          height: exportHeight,
+        // Capture the container at its natural dimensions first
+        const containerDataUrl = await toPng(exportContainer as HTMLElement, {
           pixelRatio: 2,
-          backgroundColor: 'transparent',
-          style: {
-            borderRadius: '0', // Ensure exported image has no rounded corners
-          },
+          quality: 1
         });
+        
+        // Create a canvas with the exact dimensions from the aspect ratio
+        const canvas = document.createElement('canvas');
+        canvas.width = aspectWidth;
+        canvas.height = aspectHeight;
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          throw new Error('Could not create canvas context');
+        }
+        
+        // Create a temporary image and load the captured screenshot
+        const tempImage = new Image();
+        
+        // Wait for the image to load before drawing it to the canvas
+        await new Promise<void>((resolve) => {
+          tempImage.onload = () => {
+            // Fill the entire canvas with the image
+            // This ensures the image takes up the whole canvas space
+            ctx.drawImage(tempImage, 0, 0, aspectWidth, aspectHeight);
+            resolve();
+          };
+          tempImage.src = containerDataUrl;
+        });
+        
+        // Convert canvas to data URL
+        const dataUrl = canvas.toDataURL('image/png');
         
         // Create a link and trigger download
         const link = document.createElement('a');
@@ -143,49 +142,48 @@ export const useScreenshot = () => {
   const copyToClipboard = useCallback(async (elementRef: React.RefObject<HTMLDivElement>) => {
     if (elementRef.current && screenshotSrc) {
       try {
-        // Find the export container
-        const backgroundElement = elementRef.current.querySelector('.export-container');
+        // Find the export container (canvas with background)
+        const exportContainer = elementRef.current.querySelector('.export-container');
         
-        if (!backgroundElement) {
-          throw new Error('Could not find content element for export');
+        if (!exportContainer) {
+          throw new Error('Could not find export container for clipboard');
         }
         
-        // Get the aspect ratio dimensions
-        const { width: aspectWidth, height: aspectHeight, exactDimensions } = getAspectRatioDimensions(settings.aspectRatio);
-        const aspectRatio = aspectWidth / aspectHeight;
+        // Get the exact dimensions from the selected aspect ratio preset
+        const { width: aspectWidth, height: aspectHeight } = getAspectRatioDimensions(settings.aspectRatio);
         
-        // Calculate export dimensions
-        let exportWidth, exportHeight;
-        
-        if (exactDimensions) {
-          // For social media posts, use the exact dimensions
-          exportWidth = aspectWidth;
-          exportHeight = aspectHeight;
-        } else {
-          // For standard ratios, use a slightly smaller size for clipboard
-          const baseExportSize = 1200;
-          
-          if (aspectRatio >= 1) {
-            // Landscape or square
-            exportWidth = baseExportSize;
-            exportHeight = Math.round(baseExportSize / aspectRatio);
-          } else {
-            // Portrait
-            exportHeight = baseExportSize;
-            exportWidth = Math.round(baseExportSize * aspectRatio);
-          }
-        }
-        
-        const dataUrl = await toPng(backgroundElement as HTMLElement, { 
-          quality: 1,
-          width: exportWidth,
-          height: exportHeight,
+        // Capture the container at its natural dimensions first
+        const containerDataUrl = await toPng(exportContainer as HTMLElement, {
           pixelRatio: 2,
-          backgroundColor: 'transparent',
-          style: {
-            borderRadius: '0', // Ensure exported image has no rounded corners
-          },
+          quality: 1
         });
+        
+        // Create a canvas with the exact dimensions from the aspect ratio
+        const canvas = document.createElement('canvas');
+        canvas.width = aspectWidth;
+        canvas.height = aspectHeight;
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+          throw new Error('Could not create canvas context');
+        }
+        
+        // Create a temporary image and load the captured screenshot
+        const tempImage = new Image();
+        
+        // Wait for the image to load before drawing it to the canvas
+        await new Promise<void>((resolve) => {
+          tempImage.onload = () => {
+            // Fill the entire canvas with the image
+            // This ensures the image takes up the whole canvas space
+            ctx.drawImage(tempImage, 0, 0, aspectWidth, aspectHeight);
+            resolve();
+          };
+          tempImage.src = containerDataUrl;
+        });
+        
+        // Convert canvas to data URL
+        const dataUrl = canvas.toDataURL('image/png');
         
         // Create a blob from data URL
         const blob = await fetch(dataUrl).then(res => res.blob());
@@ -212,4 +210,4 @@ export const useScreenshot = () => {
     aspectRatioOptions,
     backgroundPresets,
   };
-}; 
+};

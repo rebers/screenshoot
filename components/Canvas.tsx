@@ -319,7 +319,7 @@ const Canvas: React.FC<CanvasProps> = ({
           <div style={paddingContainerStyle}>
             {screenshotSrc && imageDimensions ? (
               <div style={contentContainerStyle}>
-                <div style={shadowWrapperStyle}>
+                <div className="shadow-wrapper" style={shadowWrapperStyle}>
                   <div style={insetWrapperStyle}>
                     <div style={imageContainerStyle}>
                       <img 
