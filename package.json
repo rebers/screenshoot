@@ -11,12 +11,13 @@
     "check": "npm run type-check && npm run lint"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@vercel/analytics": "^1.5.0",
     "html-to-image": "^1.11.13",
     "next": "15.2.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
-    "@tailwindcss/postcss": "^4",
     "tailwindcss": "^4"
   },
   "devDependencies": {
