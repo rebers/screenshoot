@@ -94,21 +94,26 @@ export const useScreenshot = () => {
         // Get the exact dimensions from the selected aspect ratio preset
         const { width: aspectWidth, height: aspectHeight } = getAspectRatioDimensions(settings.aspectRatio);
         
-        // Capture the container at its natural dimensions first
+        // Capture the container at its natural dimensions with high pixel ratio
         const containerDataUrl = await toPng(exportContainer as HTMLElement, {
-          pixelRatio: 2,
+          pixelRatio: 5,
           quality: 1
         });
         
-        // Create a canvas with the exact dimensions from the aspect ratio
+        // Create a high-resolution canvas
         const canvas = document.createElement('canvas');
-        canvas.width = aspectWidth;
-        canvas.height = aspectHeight;
+        const dpi = 300; // 300 DPI for high quality
+        const scaleFactor = dpi / 96;
+        canvas.width = Math.ceil(aspectWidth * scaleFactor);
+        canvas.height = Math.ceil(aspectHeight * scaleFactor);
         const ctx = canvas.getContext('2d');
         
         if (!ctx) {
           throw new Error('Could not create canvas context');
         }
+        
+        // Disable image smoothing for sharper edges
+        ctx.imageSmoothingEnabled = false;
         
         // Create a temporary image and load the captured screenshot
         const tempImage = new Image();
@@ -116,16 +121,15 @@ export const useScreenshot = () => {
         // Wait for the image to load before drawing it to the canvas
         await new Promise<void>((resolve) => {
           tempImage.onload = () => {
-            // Fill the entire canvas with the image
-            // This ensures the image takes up the whole canvas space
-            ctx.drawImage(tempImage, 0, 0, aspectWidth, aspectHeight);
+            // Fill the entire canvas with the image at high resolution
+            ctx.drawImage(tempImage, 0, 0, canvas.width, canvas.height);
             resolve();
           };
           tempImage.src = containerDataUrl;
         });
         
-        // Convert canvas to data URL
-        const dataUrl = canvas.toDataURL('image/png');
+        // Convert canvas to data URL with maximum quality
+        const dataUrl = canvas.toDataURL('image/png', 1.0);
         
         // Create a link and trigger download
         const link = document.createElement('a');
@@ -152,21 +156,26 @@ export const useScreenshot = () => {
         // Get the exact dimensions from the selected aspect ratio preset
         const { width: aspectWidth, height: aspectHeight } = getAspectRatioDimensions(settings.aspectRatio);
         
-        // Capture the container at its natural dimensions first
+        // Capture the container at its natural dimensions with high pixel ratio
         const containerDataUrl = await toPng(exportContainer as HTMLElement, {
-          pixelRatio: 2,
+          pixelRatio: 5,
           quality: 1
         });
         
-        // Create a canvas with the exact dimensions from the aspect ratio
+        // Create a high-resolution canvas
         const canvas = document.createElement('canvas');
-        canvas.width = aspectWidth;
-        canvas.height = aspectHeight;
+        const dpi = 300; // 300 DPI for high quality
+        const scaleFactor = dpi / 96;
+        canvas.width = Math.ceil(aspectWidth * scaleFactor);
+        canvas.height = Math.ceil(aspectHeight * scaleFactor);
         const ctx = canvas.getContext('2d');
         
         if (!ctx) {
           throw new Error('Could not create canvas context');
         }
+        
+        // Disable image smoothing for sharper edges
+        ctx.imageSmoothingEnabled = false;
         
         // Create a temporary image and load the captured screenshot
         const tempImage = new Image();
@@ -174,9 +183,8 @@ export const useScreenshot = () => {
         // Wait for the image to load before drawing it to the canvas
         await new Promise<void>((resolve) => {
           tempImage.onload = () => {
-            // Fill the entire canvas with the image
-            // This ensures the image takes up the whole canvas space
-            ctx.drawImage(tempImage, 0, 0, aspectWidth, aspectHeight);
+            // Fill the entire canvas with the image at high resolution
+            ctx.drawImage(tempImage, 0, 0, canvas.width, canvas.height);
             resolve();
           };
           tempImage.src = containerDataUrl;
