@@ -18,7 +18,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, hasImage }
     }
   }, [onImageUpload]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: {
       'image/*': SUPPORTED_IMAGE_TYPES
@@ -74,7 +74,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageUpload, hasImage }
         </svg>
       </div>
       <div className="text-center">
-        <p className="text-sm mb-2L">
+        <p className="text-sm mb-2">
           <span className="text-blue-500 font-medium">Click to upload</span> or drag & drop
         </p>
         <p className="text-xs text-gray-500">
