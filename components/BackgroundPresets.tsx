@@ -1,13 +1,8 @@
 import React from 'react';
-
-interface BackgroundPresetProps {
-  id: number;
-  name: string;
-  className: string;
-}
+import { BackgroundPreset } from '../types';
 
 interface BackgroundPresetsProps {
-  presets: BackgroundPresetProps[];
+  presets: BackgroundPreset[];
   selectedPreset: number;
   onChange: (id: number) => void;
 }
@@ -41,4 +36,4 @@ const BackgroundPresets: React.FC<BackgroundPresetsProps> = ({
   );
 };
 
-export default BackgroundPresets; 
+export default BackgroundPresets;

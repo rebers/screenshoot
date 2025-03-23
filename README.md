@@ -1,58 +1,51 @@
-# 📸 ScreenShoot
+# Screenshoot
 
-**A beautiful way to showcase your screenshots.**
+A modern screenshot beautifying app that helps you create beautiful, professional-looking screenshots for your social media posts, documentation, or presentations.
 
-![ScreenShoot Demo](https://i.imgur.com/placeholder.png)
-
-## What is this?
-
-ScreenShoot is a web app that makes your boring screenshots look *vibin'*. Upload any screenshot, customize it with beautiful gradients, adjust padding and shadows, and export it ready for Twitter, Instagram, or wherever you want to flex your UI.
+Open-source, and made with Cursor AI and Cline (Sonnet 3.7 + Thinking).
 
 ## Features
 
-- 🖼️ Gorgeous gradient backgrounds
-- 📱 Ready-made aspect ratios for social media platforms
-- 🎨 Customizable padding, shadows, and borders
-- 💾 Export directly to PNG or copy to clipboard
-- 🔒 100% client-side - your images never leave your browser
-
-## The AI-powered dev story
-
-This entire app was built in one afternoon, with the help of Cursor AI. That's right, an AI helped write most of this code. The future is now, and it's surprisingly good at CSS.
-
-As they say in the vibe coding community: "Why spend 10 hours debugging when you can spend 10 minutes prompting?" (Nobody actually says this, but now YOU can start saying it and sound cool at developer meetups).
-
-## Stack
-
-- Next.js 15
-- TypeScript
-- Tailwind CSS
-- html-to-image for exporting
+- Multiple aspect ratio presets for different social media platforms
+- Customizable padding and inset
+- Beautiful gradient backgrounds
+- Adjustable shadow effects
+- Rounded corners
+- Copy to clipboard
+- Export as PNG
+- Dark mode support
 
 ## Getting Started
 
-1. Clone the repo:
+1. Clone the repository:
 ```bash
 git clone https://github.com/rebers/screenshoot.git
-cd screenshoot
 ```
 
 2. Install dependencies:
 ```bash
+cd screenshoot
 npm install
 ```
 
-3. Run the development server:
+3. Start the development server:
 ```bash
 npm run dev
 ```
 
-4. Visit http://localhost:3000 and start beautifying your screenshots!
+4. Visit http://localhost:3000 and start enhancing your screenshots!
+
+## Built With
+
+- Next.js 15.0.0
+- React 19.0.0
+- Tailwind CSS 4.0
+- TypeScript
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Credits
 
-Built by [rebers](https://github.com/rebers) with the help of Cursor AI - where the vibes are immaculate and the React components practically write themselves.
+Built by [rebers](https://github.com/rebers) with the help of Cursor AI and Cline - where the vibes are immaculate and the React components practically write themselves. Life is good. You heard me. Life. Is. Good.

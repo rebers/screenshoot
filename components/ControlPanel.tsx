@@ -1,14 +1,13 @@
 import React from 'react';
 import Slider from './Slider';
 import ColorPicker from './ColorPicker';
-import AspectRatioSelector from './AspectRatioSelector';
 import BackgroundPresets from './BackgroundPresets';
-import { ScreenshotSettings, AspectRatioOption } from '../types';
+import { ScreenshotSettings, AspectRatioOption, BackgroundPreset } from '../types';
 
 interface ControlPanelProps {
   settings: ScreenshotSettings;
   aspectRatioOptions: AspectRatioOption[];
-  backgroundPresets: { id: number; name: string; className: string }[];
+  backgroundPresets: BackgroundPreset[];
   onSettingsChange: (settings: Partial<ScreenshotSettings>) => void;
   onExportImage: () => void;
   onCopyToClipboard: () => void;
@@ -151,4 +150,4 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   );
 };
 
-export default ControlPanel; 
+export default ControlPanel;

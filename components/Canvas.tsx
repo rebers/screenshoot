@@ -1,10 +1,10 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ScreenshotSettings } from '../types';
+import { ScreenshotSettings, BackgroundPreset } from '../types';
 import ImageUploader from './ImageUploader';
 
 interface CanvasProps {
   settings: ScreenshotSettings;
-  backgroundPresets: { id: number; name: string; className: string }[];
+  backgroundPresets: BackgroundPreset[];
   screenshotSrc: string | null;
   onImageUpload: (file: File) => void;
 }
