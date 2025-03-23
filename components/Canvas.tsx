@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import Image from 'next/image';
 import { ScreenshotSettings, BackgroundPreset } from '../types';
 import ImageUploader from './ImageUploader';
 
@@ -16,7 +17,8 @@ const Canvas: React.FC<CanvasProps> = ({
   onImageUpload,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
+  // We don't actually need the image ref since we're not manipulating the image directly
+  // It was originally used with the HTML img element but isn't needed for Next.js Image
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [contentScale, setContentScale] = useState(1);
@@ -29,7 +31,8 @@ const Canvas: React.FC<CanvasProps> = ({
   // Handle image loading to get dimensions
   useEffect(() => {
     if (screenshotSrc) {
-      const img = new Image();
+      // Use the HTMLImageElement constructor instead of Image to avoid naming conflict with next/image
+      const img = new window.Image();
       img.onload = () => {
         setImageDimensions({
           width: img.width,
@@ -46,9 +49,12 @@ const Canvas: React.FC<CanvasProps> = ({
   useEffect(() => {
     if (!containerRef.current) return;
     
+    // Store reference to current element to avoid closure issues
+    const currentContainer = containerRef.current;
+    
     const updateSize = () => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
+      if (currentContainer) {
+        const rect = currentContainer.getBoundingClientRect();
         setContainerSize({ 
           width: rect.width, 
           height: rect.height 
@@ -61,12 +67,10 @@ const Canvas: React.FC<CanvasProps> = ({
     
     // Update on resize
     const resizeObserver = new ResizeObserver(updateSize);
-    resizeObserver.observe(containerRef.current);
+    resizeObserver.observe(currentContainer);
     
     return () => {
-      if (containerRef.current) {
-        resizeObserver.unobserve(containerRef.current);
-      }
+      resizeObserver.unobserve(currentContainer);
     };
   }, []);
 
@@ -322,11 +326,13 @@ const Canvas: React.FC<CanvasProps> = ({
                 <div className="shadow-wrapper" style={shadowWrapperStyle}>
                   <div style={insetWrapperStyle}>
                     <div style={imageContainerStyle}>
-                      <img 
-                        ref={imageRef}
-                        src={screenshotSrc} 
-                        alt="Uploaded screenshot" 
+                      <Image 
+                        src={screenshotSrc}
+                        alt="Uploaded screenshot"
                         style={imageStyle}
+                        width={scaledImageWidth > 0 ? scaledImageWidth : undefined}
+                        height={scaledImageHeight > 0 ? scaledImageHeight : undefined}
+                        unoptimized // Using unoptimized for base64 images
                       />
                     </div>
                   </div>

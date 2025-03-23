@@ -2,7 +2,11 @@
 
 A modern screenshot beautifying app that helps you create beautiful, professional-looking screenshots for your social media posts, documentation, or presentations.
 
-Open-source, and made with Cursor AI and Cline (Sonnet 3.7 + Thinking).
+I built this because people kept posting cool screenshots on X/Twitter, but nobody would tell me how.
+
+F*ck gatekeepers.
+
+Open-source, free to use, and made with Cursor AI and Cline (Sonnet 3.7 + Thinking).
 
 ## Features
 
