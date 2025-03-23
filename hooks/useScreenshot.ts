@@ -4,23 +4,12 @@ import { toPng } from 'html-to-image';
 
 // Define aspect ratio options
 export const aspectRatioOptions: AspectRatioOption[] = [
-  // Standard ratios
-  { label: '4:3', value: '4:3', width: 4, height: 3 },
-  { label: '3:2', value: '3:2', width: 3, height: 2 },
-  { label: '16:9', value: '16:9', width: 16, height: 9 },
-  { label: '1:1', value: '1:1', width: 1, height: 1 },
-  { label: '9:16', value: '9:16', width: 9, height: 16 },
-  { label: '4:5', value: '4:5', width: 4, height: 5 },
-  { label: '1.91:1', value: '1.91:1', width: 1.91, height: 1 },
-  
-  // Social media specific
-  { label: 'YouTube Thumbnail', value: 'youtube-thumbnail', width: 1280, height: 720 },
-  { label: 'Instagram Story', value: 'instagram-story', width: 1080, height: 1920 },
-  { label: 'Instagram Square', value: 'instagram-square', width: 1080, height: 1080 },
-  { label: 'Instagram Portrait', value: 'instagram-portrait', width: 1080, height: 1350 },
-  { label: 'Instagram Landscape', value: 'instagram-landscape', width: 1080, height: 566 },
-  { label: 'Twitter Post', value: 'twitter-post', width: 1600, height: 900 },
-  { label: 'YouTube Community', value: 'youtube-community', width: 1080, height: 1080 },
+  // Social media specific formats
+  { label: 'X/Twitter Post (16:9)', value: 'twitter-post', width: 1600, height: 900 },
+  { label: 'Instagram Story (9:16)', value: 'instagram-story', width: 1080, height: 1920 },
+  { label: 'YouTube Thumbnail (16:9)', value: 'youtube-thumbnail', width: 1280, height: 720 },
+  { label: 'Instagram Post (4:5)', value: 'instagram-portrait', width: 1080, height: 1350 },
+  { label: 'YouTube Community Post (1:1)', value: 'youtube-community', width: 1080, height: 1080 },
 ];
 
 // Define background presets
@@ -50,7 +39,7 @@ const defaultSettings: ScreenshotSettings = {
   borderRadius: 8,
   shadow: 15,
   backgroundPreset: 1,
-  aspectRatio: '16:9',
+  aspectRatio: 'twitter-post',
 };
 
 export const useScreenshot = () => {
@@ -83,16 +72,11 @@ export const useScreenshot = () => {
       return { 
         width: aspectOption.width, 
         height: aspectOption.height,
-        exactDimensions: !['4:3', '3:2', '16:9', '1:1', '9:16', '4:5', '1.91:1'].includes(aspectRatioValue)
+        exactDimensions: true
       };
     }
     
     // Default fallback if not found (shouldn't happen)
-    if (aspectRatioValue.includes(':')) {
-      const [width, height] = aspectRatioValue.split(':').map(Number);
-      return { width, height, exactDimensions: false };
-    }
-    
     return { width: 16, height: 9, exactDimensions: false };
   };
 
@@ -100,8 +84,8 @@ export const useScreenshot = () => {
   const exportImage = useCallback(async (elementRef: React.RefObject<HTMLDivElement>) => {
     if (elementRef.current && screenshotSrc) {
       try {
-        // Get the element with the background gradient
-        const backgroundElement = elementRef.current.querySelector('div[class*="bg-gradient"]');
+        // Find the export container
+        const backgroundElement = elementRef.current.querySelector('.export-container');
         
         if (!backgroundElement) {
           throw new Error('Could not find content element for export');
@@ -139,6 +123,9 @@ export const useScreenshot = () => {
           height: exportHeight,
           pixelRatio: 2,
           backgroundColor: 'transparent',
+          style: {
+            borderRadius: '0', // Ensure exported image has no rounded corners
+          },
         });
         
         // Create a link and trigger download
@@ -156,8 +143,8 @@ export const useScreenshot = () => {
   const copyToClipboard = useCallback(async (elementRef: React.RefObject<HTMLDivElement>) => {
     if (elementRef.current && screenshotSrc) {
       try {
-        // Get the element with the background gradient
-        const backgroundElement = elementRef.current.querySelector('div[class*="bg-gradient"]');
+        // Find the export container
+        const backgroundElement = elementRef.current.querySelector('.export-container');
         
         if (!backgroundElement) {
           throw new Error('Could not find content element for export');
@@ -195,6 +182,9 @@ export const useScreenshot = () => {
           height: exportHeight,
           pixelRatio: 2,
           backgroundColor: 'transparent',
+          style: {
+            borderRadius: '0', // Ensure exported image has no rounded corners
+          },
         });
         
         // Create a blob from data URL

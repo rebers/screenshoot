@@ -19,6 +19,7 @@ const Canvas: React.FC<CanvasProps> = ({
   const imageRef = useRef<HTMLImageElement>(null);
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  const [contentScale, setContentScale] = useState(1);
   
   // Get current background class
   const currentBackground = backgroundPresets.find(
@@ -68,53 +69,107 @@ const Canvas: React.FC<CanvasProps> = ({
       }
     };
   }, []);
-  
-  // Find the aspect ratio option
-  let aspectWidth = 16;
-  let aspectHeight = 9;
-  
-  // Parse from standard aspect ratios
-  if (settings.aspectRatio.includes(':')) {
-    [aspectWidth, aspectHeight] = settings.aspectRatio.split(':').map(Number);
-  } else {
-    // Handle special formats
-    switch (settings.aspectRatio) {
-      case 'youtube-thumbnail':
-        aspectWidth = 1280;
-        aspectHeight = 720;
-        break;
-      case 'instagram-story':
-        aspectWidth = 1080;
-        aspectHeight = 1920;
-        break;
-      case 'instagram-square':
-        aspectWidth = 1080;
-        aspectHeight = 1080;
-        break;
-      case 'instagram-portrait':
-        aspectWidth = 1080;
-        aspectHeight = 1350;
-        break;
-      case 'instagram-landscape':
-        aspectWidth = 1080;
-        aspectHeight = 566;
-        break;
-      case 'twitter-post':
-        aspectWidth = 1600;
-        aspectHeight = 900;
-        break;
-      case 'youtube-community':
-        aspectWidth = 1080;
-        aspectHeight = 1080;
-        break;
-      default:
-        // Default to 16:9
-        aspectWidth = 16;
-        aspectHeight = 9;
+
+  // Calculate optimal content scale when dimensions or settings change
+  useEffect(() => {
+    if (!imageDimensions || !containerSize.width || !containerSize.height) {
+      return;
     }
-  }
+
+    // Calculate the scale factor for the content based on available space
+    const calculateScaleFactor = () => {
+      // Calculate the canvas size (which has a fixed aspect ratio)
+      const { width: aspectWidth, height: aspectHeight } = getAspectRatio(settings.aspectRatio);
+      const canvasAspectRatio = aspectWidth / aspectHeight;
+      
+      // Get the physical dimensions of the canvas based on the container
+      const parentWidth = containerSize.width;
+      const parentHeight = containerSize.height;
+      const parentRatio = parentWidth / parentHeight;
+      
+      let canvasWidth, canvasHeight;
+      if (parentRatio > canvasAspectRatio) {
+        // Container is wider than canvas aspect ratio
+        canvasHeight = parentHeight;
+        canvasWidth = parentHeight * canvasAspectRatio;
+      } else {
+        // Container is taller than canvas aspect ratio
+        canvasWidth = parentWidth;
+        canvasHeight = parentWidth / canvasAspectRatio;
+      }
+      
+      // Calculate available space after padding and inset
+      const availableWidth = canvasWidth - (settings.padding * 2) - (settings.inset * 2);
+      const availableHeight = canvasHeight - (settings.padding * 2) - (settings.inset * 2);
+      
+      // Safety check for non-positive dimensions
+      if (availableWidth <= 0 || availableHeight <= 0) {
+        return 0.01; // Small non-zero value
+      }
+      
+      // Calculate image and available space aspect ratios
+      const imageAspectRatio = imageDimensions.width / imageDimensions.height;
+      const availableSpaceRatio = availableWidth / availableHeight;
+      
+      // Determine which dimension is the constraint
+      let scale;
+      if (imageAspectRatio > availableSpaceRatio) {
+        // Image is relatively wider than available space, width is the constraint
+        scale = availableWidth / imageDimensions.width;
+      } else {
+        // Image is relatively taller than available space, height is the constraint
+        scale = availableHeight / imageDimensions.height;
+      }
+      
+      // Apply a small safety factor
+      return scale * 0.95;
+    };
+    
+    setContentScale(calculateScaleFactor());
+  }, [imageDimensions, containerSize, settings.padding, settings.inset, settings.aspectRatio]);
   
-  // Calculate aspect ratio constraints
+  // Get aspect ratio from the settings
+  const getAspectRatio = (aspectRatioSetting: string) => {
+    let aspectWidth = 16;
+    let aspectHeight = 9;
+    
+    // Parse from standard aspect ratios
+    if (aspectRatioSetting.includes(':')) {
+      [aspectWidth, aspectHeight] = aspectRatioSetting.split(':').map(Number);
+    } else {
+      // Handle special formats
+      switch (aspectRatioSetting) {
+        case 'instagram-story':
+          aspectWidth = 9;
+          aspectHeight = 16;
+          break;
+        case 'instagram-square':
+        case 'youtube-community':
+          aspectWidth = 1;
+          aspectHeight = 1;
+          break;
+        case 'instagram-portrait':
+          aspectWidth = 4;
+          aspectHeight = 5;
+          break;
+        case 'youtube-thumbnail':
+        case 'twitter-post':
+          aspectWidth = 16;
+          aspectHeight = 9;
+          break;
+        default:
+          // Default to 16:9
+          aspectWidth = 16;
+          aspectHeight = 9;
+      }
+    }
+    
+    return { width: aspectWidth, height: aspectHeight };
+  };
+  
+  const { width: aspectWidth, height: aspectHeight } = getAspectRatio(settings.aspectRatio);
+  
+  // Calculate aspect ratio constraints for the canvas
   const calculateConstrainedSize = () => {
     const parentWidth = containerSize.width;
     const parentHeight = containerSize.height;
@@ -145,10 +200,12 @@ const Canvas: React.FC<CanvasProps> = ({
     }
   };
   
-  // Get constrained dimensions
+  // Get constrained dimensions for the canvas
   const aspectConstrainedSize = calculateConstrainedSize();
   
-  // Container style
+  // Calculate styles based on aspect ratios and dimensions
+  
+  // Canvas container style - maintains the canvas aspect ratio
   const containerStyle: React.CSSProperties = {
     position: 'relative',
     ...aspectConstrainedSize,
@@ -165,75 +222,93 @@ const Canvas: React.FC<CanvasProps> = ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    boxSizing: 'border-box',
   };
   
-  // Calculate effective space after padding
-  const effectiveSpaceStyle: React.CSSProperties = {
-    padding: `${settings.padding}px`,
+  // Padding container - creates space between canvas edge and content
+  const paddingContainerStyle: React.CSSProperties = {
     width: '100%',
     height: '100%',
     boxSizing: 'border-box',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: `${settings.padding}px`,
   };
-
-  // Calculate the max allowed dimensions considering padding
-  const maxWidth = containerSize.width - (settings.padding * 2);
-  const maxHeight = aspectConstrainedSize.height !== '100%' 
-    ? parseInt(aspectConstrainedSize.height as string) - (settings.padding * 2)
-    : containerSize.height - (settings.padding * 2);
   
-  // Calculate image container style to fill available space
-  const imageContainerStyle: React.CSSProperties = {
+  // Content container - holds the shadow and image
+  const contentContainerStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    maxWidth: '100%',
-    maxHeight: '100%',
+    boxSizing: 'border-box',
+    position: 'relative',
+    overflow: 'visible',
   };
-
-  // Create the image style - using this approach, the image will define its own size
+  
+  // Shadow wrapper - applies shadow and border radius
+  const shadowWrapperStyle: React.CSSProperties = {
+    boxShadow: settings.shadow > 0 
+      ? `${settings.shadow * 0.5}px ${settings.shadow * 1.5}px ${settings.shadow * 2.5}px rgba(0,0,0,0.35)` 
+      : 'none',
+    borderRadius: settings.borderRadius > 0 ? `${settings.borderRadius}px` : '0',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+  
+  // Inset wrapper - handles the inset border/padding around the image
+  const insetWrapperStyle: React.CSSProperties = {
+    backgroundColor: settings.insetColor,
+    boxSizing: 'border-box',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: `${settings.inset}px`,
+  };
+  
+  // Image container styles
+  const imageContainerStyle: React.CSSProperties = {
+    backgroundColor: '#fff',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  };
+  
+  // Calculate dimensions for scaled image
+  const scaledImageWidth = imageDimensions ? imageDimensions.width * contentScale : 0;
+  const scaledImageHeight = imageDimensions ? imageDimensions.height * contentScale : 0;
+  
+  // Image style
   const imageStyle: React.CSSProperties = {
     display: 'block',
-    maxWidth: `${maxWidth - (settings.inset * 2)}px`,
-    maxHeight: `${maxHeight - (settings.inset * 2)}px`,
-    width: 'auto',
-    height: 'auto',
+    width: scaledImageWidth > 0 ? `${scaledImageWidth}px` : 'auto',
+    height: scaledImageHeight > 0 ? `${scaledImageHeight}px` : 'auto',
   };
-  
-  // Determine the style for the screenshot wrapper (the white container with shadow)
-  // This will automatically size to its content (the image)
-  const screenshotStyle: React.CSSProperties = {
-    boxShadow: settings.shadow > 0 
-      ? `${settings.shadow * 0.8}px ${settings.shadow * 1.2}px ${settings.shadow * 2}px rgba(0,0,0,0.3)` 
-      : 'none',
-    borderRadius: `${settings.borderRadius}px`,
-    overflow: 'hidden',
-    display: 'inline-flex', // This will make it size to content
-    backgroundColor: '#fff',
-    // No width/height set - will size to the image
-  };
-  
-  if (settings.inset > 0) {
-    screenshotStyle.border = `${settings.inset}px solid ${settings.insetColor}`;
-    screenshotStyle.boxSizing = 'border-box';
-  }
   
   // Style for the placeholder when no image is uploaded
   const placeholderStyle: React.CSSProperties = {
-    ...screenshotStyle,
-    minHeight: '200px',
-    minWidth: '200px',
+    width: '200px',
+    height: '200px',
+    backgroundColor: '#fff',
+    borderRadius: settings.borderRadius > 0 ? `${settings.borderRadius}px` : '0',
+    boxShadow: settings.shadow > 0 
+      ? `${settings.shadow * 0.5}px ${settings.shadow * 1.5}px ${settings.shadow * 2.5}px rgba(0,0,0,0.35)` 
+      : 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   };
   
   return (
     <div 
       ref={containerRef}
-      className="w-full h-full flex items-start justify-center"
+      className="w-full h-full flex items-center justify-center"
     >
       <div
-        className={`${currentBackground} rounded-2xl overflow-hidden`}
+        className={`${currentBackground} overflow-hidden export-container`}
         style={containerStyle}
       >
         {/* Background effects */}
@@ -241,26 +316,30 @@ const Canvas: React.FC<CanvasProps> = ({
         
         {/* Content that will be exported */}
         <div className="relative z-10" style={innerContainerStyle}>
-          <div style={effectiveSpaceStyle}>
-            <div style={imageContainerStyle}>
-              {screenshotSrc ? (
-                <div style={screenshotStyle}>
-                  <img 
-                    ref={imageRef}
-                    src={screenshotSrc} 
-                    alt="Uploaded screenshot" 
-                    style={imageStyle}
-                  />
+          <div style={paddingContainerStyle}>
+            {screenshotSrc && imageDimensions ? (
+              <div style={contentContainerStyle}>
+                <div style={shadowWrapperStyle}>
+                  <div style={insetWrapperStyle}>
+                    <div style={imageContainerStyle}>
+                      <img 
+                        ref={imageRef}
+                        src={screenshotSrc} 
+                        alt="Uploaded screenshot" 
+                        style={imageStyle}
+                      />
+                    </div>
+                  </div>
                 </div>
-              ) : (
-                <div 
-                  className="bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center"
-                  style={placeholderStyle}
-                >
-                  <ImageUploader onImageUpload={onImageUpload} hasImage={!!screenshotSrc} />
-                </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div 
+                className="bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center"
+                style={placeholderStyle}
+              >
+                <ImageUploader onImageUpload={onImageUpload} hasImage={!!screenshotSrc} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -268,4 +347,4 @@ const Canvas: React.FC<CanvasProps> = ({
   );
 };
 
-export default Canvas; 
+export default Canvas;

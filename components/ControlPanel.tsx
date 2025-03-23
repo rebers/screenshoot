@@ -24,23 +24,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   onCopyToClipboard,
   canExport,
 }) => {
-  // Group aspect ratio options by category
-  const standardRatios = aspectRatioOptions.filter(option => 
-    option.value.includes(':'));
-  
-  const socialMediaRatios = aspectRatioOptions.filter(option => 
-    !option.value.includes(':'));
-  
-  // Organize social media ratios by platform
-  const instagramRatios = socialMediaRatios.filter(option => 
-    option.value.includes('instagram'));
-  
-  const youtubeRatios = socialMediaRatios.filter(option => 
-    option.value.includes('youtube'));
-  
-  const twitterRatios = socialMediaRatios.filter(option => 
-    option.value.includes('twitter'));
-
   return (
     <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm p-6">
       <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Customize</h2>
@@ -63,53 +46,20 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
           <label className="block text-gray-700 dark:text-gray-300 mb-2">
             Aspect Ratio
           </label>
-          
-          <div className="space-y-4">
-            {/* Standard Ratios */}
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Standard</p>
-              <AspectRatioSelector
-                options={standardRatios}
-                value={settings.aspectRatio}
-                onChange={(value) => onSettingsChange({ aspectRatio: value })}
-              />
-            </div>
-            
-            {/* Instagram Ratios */}
-            {instagramRatios.length > 0 && (
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Instagram</p>
-                <AspectRatioSelector
-                  options={instagramRatios}
-                  value={settings.aspectRatio}
-                  onChange={(value) => onSettingsChange({ aspectRatio: value })}
-                />
-              </div>
-            )}
-            
-            {/* YouTube Ratios */}
-            {youtubeRatios.length > 0 && (
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">YouTube</p>
-                <AspectRatioSelector
-                  options={youtubeRatios}
-                  value={settings.aspectRatio}
-                  onChange={(value) => onSettingsChange({ aspectRatio: value })}
-                />
-              </div>
-            )}
-            
-            {/* Twitter Ratios */}
-            {twitterRatios.length > 0 && (
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Twitter</p>
-                <AspectRatioSelector
-                  options={twitterRatios}
-                  value={settings.aspectRatio}
-                  onChange={(value) => onSettingsChange({ aspectRatio: value })}
-                />
-              </div>
-            )}
+          <div className="flex flex-col space-y-2">
+            {aspectRatioOptions.map((option) => (
+              <button
+                key={option.value}
+                className={`w-full p-3 text-left rounded-lg transition-colors ${
+                  settings.aspectRatio === option.value
+                    ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-medium'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+                onClick={() => onSettingsChange({ aspectRatio: option.value })}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
